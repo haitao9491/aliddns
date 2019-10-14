@@ -1,0 +1,68 @@
+#!/bin/sh
+
+echo "Start...
+"
+workdir=$PWD
+aliddns_ak=`cat $workdir/aliddns.cfg | awk -F "=" '{if($1=="aliddns_ak") {print $2}}'`
+aliddns_sk=`cat $workdir/aliddns.cfg | awk -F "=" '{if($1=="aliddns_sk") {print $2}}'`
+aliddns_domain=`cat $workdir/aliddns.cfg | awk -F "=" '{if($1=="aliddns_domain") {print $2}}'`
+aliddns_ttl=`cat $workdir/aliddns.cfg | awk -F "=" '{if($1=="aliddns_ttl") {print $2}}'`
+dev=`cat $workdir/aliddns.cfg | awk -F "=" '{if($1=="dev") {print $2}}'`
+DIR=`cat $workdir/aliddns.cfg | awk -F "=" '{if($1=="aliddnsDIR") {print $2}}'`
+
+[[ ! -d $DIR/aliddns_ipv6 ]] && mkdir -p $aliddns/aliddns_ipv6
+[[ ! -d $DIR/aliddns_ipv4 ]] && mkdir -p $aliddns/aliddns_ipv4
+rm -rf $DIR/aliddns_ipv*/aliddns.*
+count6=`cat $workdir/aliddns.cfg | awk -F ":" '{if($1=="ipv6") {print $2}}' | awk -v num="${i}" '{print NF}'`
+count4=`cat $workdir/aliddns.cfg | awk -F ":" '{if($1=="ipv4") {print $2}}' | awk -v num="${i}" '{print NF}'`
+echo "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin" > /usr/local/bin/aliddns
+
+for ((i=1; i <= count6; i++))
+do
+    aliddns_name1=`cat $workdir/aliddns.cfg | awk -F ":" '{if($1=="ipv6") {print $2}}' | awk -v num="${i}" '{print $num}'`
+    echo "$aliddns_name1"
+    filedir=$DIR/aliddns_ipv6
+echo "#!/bin/sh
+aliddns_ak=\"$aliddns_ak\"
+aliddns_sk=\"$aliddns_sk\"
+aliddns_name1='$aliddns_name1'
+aliddns_domain='$aliddns_domain'
+aliddns_ttl=\"$aliddns_ttl\"
+dev=$dev
+ipv6=on
+" > $filedir/aliddns.$aliddns_name1
+cat $workdir/analysis >> $filedir/aliddns.$aliddns_name1
+echo "sleep 1
+sh $filedir/aliddns.$aliddns_name1" >> /usr/local/bin/aliddns
+done
+
+for ((i=1; i <= count4; i++))
+do
+    aliddns_name1=`cat $workdir/aliddns.cfg | awk -F ":" '{if($1=="ipv4") {print $2}}' | awk -v num="${i}" '{print $num}'`
+    echo "$aliddns_name1"
+    filedir=$DIR/aliddns_ipv4
+echo "#!/bin/sh
+aliddns_ak=\"$aliddns_ak\"
+aliddns_sk=\"$aliddns_sk\"
+aliddns_name1='$aliddns_name1'
+aliddns_domain='$aliddns_domain'
+aliddns_ttl=\"$aliddns_ttl\"
+dev=$dev
+ipv4=on
+" > $filedir/aliddns.$aliddns_name1
+cat $workdir/analysis >> $filedir/aliddns.$aliddns_name1
+echo "sleep 1
+sh $filedir/aliddns.$aliddns_name1" >> /usr/local/bin/aliddns
+done
+
+echo "
+#### crontab -e ############
+# * */2 * * * /usr/local/bin/aliddns > /opt/aliddns.log                 # Running aliddns once two hours
+# * */2 * * * cpupower -c all frequency-set -g performance > /dev/null  # set cpu performance once two hours
+#### /etc/rc.d/rc.local ####
+# /usr/local/bin/aliddns > /opt/aliddns.log                             # Auto boot aliddns after reboot server
+" >> /usr/local/bin/aliddns
+
+chmod 755 /usr/local/bin/aliddns
+echo "
+OK !!!"
