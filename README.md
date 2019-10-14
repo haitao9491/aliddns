@@ -1,4 +1,4 @@
-# aliDDNS_ipv6
+# aliddns auto install
 
 # aliddns/install/
 ## there are three files such as aliddns.cfg , analysis and aliddns-install.
