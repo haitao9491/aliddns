@@ -10,8 +10,8 @@ aliddns_ttl=`cat $workdir/aliddns.cfg | awk -F "=" '{if($1=="aliddns_ttl") {prin
 dev=`cat $workdir/aliddns.cfg | awk -F "=" '{if($1=="dev") {print $2}}'`
 DIR=`cat $workdir/aliddns.cfg | awk -F "=" '{if($1=="aliddnsDIR") {print $2}}'`
 
-[[ ! -d $DIR/aliddns_ipv6 ]] && mkdir -p $aliddns/aliddns_ipv6
-[[ ! -d $DIR/aliddns_ipv4 ]] && mkdir -p $aliddns/aliddns_ipv4
+[[ ! -d $DIR/aliddns_ipv6 ]] && mkdir -p $DIR/aliddns_ipv6
+[[ ! -d $DIR/aliddns_ipv4 ]] && mkdir -p $DIR/aliddns_ipv4
 rm -rf $DIR/aliddns_ipv*/aliddns.*
 count6=`cat $workdir/aliddns.cfg | awk -F ":" '{if($1=="ipv6") {print $2}}' | awk -v num="${i}" '{print NF}'`
 count4=`cat $workdir/aliddns.cfg | awk -F ":" '{if($1=="ipv4") {print $2}}' | awk -v num="${i}" '{print NF}'`
